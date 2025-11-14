@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Update JSON on GitHub</title>
+</head>
+<body>
+    <h1>Send Hello to GitHub</h1>
+    <button onclick="sendHello()">Send Hello</button>
+
+    <script>
+        async function sendHello() {
+            const token = "YOUR_PERSONAL_ACCESS_TOKEN"; // ⚠ Don't expose in public
+            const owner = "YOUR_GITHUB_USERNAME";
+            const repo = "YOUR_REPO_NAME";
+            const path = "command.json";
+
+            // JSON content to write
+            const data = { message: "hello" };
+            const contentBase64 = btoa(JSON.stringify(data, null, 2));
+
+            // Step 1: Get current SHA (needed for update)
+            const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                headers: { Authorization: `token ${token}` }
+            });
+            const fileData = await res.json();
+            const sha = fileData.sha;
+
+            // Step 2: Update the file
+            await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                method: "PUT",
+                headers: {
+                    "Authorization": `token ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    message: "Update JSON via webpage",
+                    content: contentBase64,
+                    sha: sha
+                })
+            });
+
+            alert("JSON updated on GitHub!");
+        }
+    </script>
+</body>
+</html>
